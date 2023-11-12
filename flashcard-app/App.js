@@ -14,6 +14,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Flashcard from './flashcard';
+import CarouselCards from './carouselCards';
 
 
 
@@ -107,6 +108,7 @@ function Tabs() {
       />
       <Tab.Screen name="Libraries" component={Libraries} />
       <Tab.Screen name="Profile" component={Profile} />
+      <Tab.Screen name="Carousel" component={CarouselCards} />
     </Tab.Navigator>
   );
 }
