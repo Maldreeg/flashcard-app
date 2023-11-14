@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useState } from "react";
 import {
   Image, 
@@ -7,24 +6,22 @@ import {
   View, 
   TextInput, 
   TouchableOpacity,
-  ScrollView 
+  ScrollView,
+  FlatList,
+  Modal,  
 } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Carousel, { Pagination } from 'react-native-snap-carousel';
+import { SLIDER_WIDTH, ITEM_WIDTH } from './carouselCardItem';
 import Flashcard from './flashcard';
-import CarouselCards from './carouselCards';
-
-
-
+import { decks as decksData } from './data';
 
 const Tab = createBottomTabNavigator();
-
 const Stack = createNativeStackNavigator();
-const what={frontContent: 'Alleniga1', backContent: 'Macaspac1'};
-
-
+var filter=decksData[0];
 
 //searchbar
 
@@ -41,17 +38,215 @@ const SearchBar = () => {
   );
 };
 
-function Homepage() {
-  const flashcards = [
-    { question: 'SINO ANG POGI?', answer: 'vhilly :))' },
-  ];
+function Homepage({ navigation }) {
+  const [isModalVisibleDeck, setIsModalVisibleDeck] = useState(false);
+  const [isModalVisibleFlashcard, setIsModalVisibleFlashcard] = useState(false);
+  const [newDeckName, setNewDeckName] = useState('');
+  const [decks, setDecks] = useState(decksData); 
+  const [selectedDeck, setSelectedDeck] = useState(decks[0]);
+  const [index, setIndex] = React.useState(0);
+  const isCarousel = React.useRef(null);
+
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+  
+
+  const toggleModalDeck = () => {
+    setIsModalVisibleDeck(!isModalVisibleDeck);
+  };
+  const toggleModalFlashcard = () => {
+    setIsModalVisibleFlashcard(!isModalVisibleFlashcard);
+  };
+
+  const handleDeckPress = (deck) => {
+    setSelectedDeck(deck);
+    filter=selectedDeck;
+    //navigation.replace('CarouselCards')
+  };
+
+  const handleButtonPressDeck = () => {
+    toggleModalDeck();
+  };
+  const handleButtonPressFlashcard = () => {
+    toggleModalFlashcard();
+  };
+  const handleCreateDeck = () => {
+    if (!newDeckName) {
+      alert('Please enter a valid deck name');
+      return;
+    }
+
+    const newDeck = {
+      id: decks.length + 1,
+      name: newDeckName,
+      flashcards: [],
+    };
+
+    decks.push(newDeck);
+    //setDecks([...decks, newDeck]);
+    setNewDeckName('');
+    toggleModalDeck();
+  };
+
+  const handleAddFlashcard = () => {
+    if (!question || !answer) {
+      alert('Please enter both question and answer');
+      return;
+    }
+
+    const newFlashcard = {
+      id: selectedDeck.flashcards.length + 1,
+      frontContent: question,
+      backContent: answer,
+    };
+
+    selectedDeck.flashcards.push(newFlashcard)
+    /*
+    setSelectedDeck((prevDeck) => ({
+      ...prevDeck,
+      flashcards: [...prevDeck.flashcards, newFlashcard],
+    }));
+    */
+    toggleModalFlashcard();
+  };
+
+  const moveToDeckScreen=()=>{
+    navigation.replace('CarouselCards')
+  }
+  
+
   return (
+    <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}> 
     <View style={styles.HomePageUI}>
-      <Flashcard frontContent="alleniga" backContent="macasapac" />
+      <View>
+        <FlatList
+          data={decks}
+          horizontal
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => handleDeckPress(item)}style={styles.deckContainer}>
+              <Text style={styles.deckTitle}>{item.name}</Text>
+            </TouchableOpacity>
+          )}
+        />
+        <TouchableOpacity style={styles.addButton} onPress={handleButtonPressDeck}>
+          <Text style={styles.addButtonText}>ADD DECK</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.addButton} onPress={moveToDeckScreen}>
+          <Text style={styles.addButtonText}>MOVE TO EDIT MODE</Text>
+        </TouchableOpacity>
+  <Modal
+    animationType="slide"
+    transparent={true}
+    visible={isModalVisibleDeck}
+    onRequestClose={() => {
+      toggleModalDeck();
+    }}
+  >
+    <View style={styles.modalContainer}>
+      <View style={styles.modalContent}>
+        <Text style={styles.modalTitle}>Add Deck</Text>
+        <TextInput
+          style={styles.modalInput}
+          placeholder="Deck Name"
+          value={newDeckName}
+          onChangeText={(text) => setNewDeckName(text)}
+        />
+        <TouchableOpacity
+          style={styles.modalButton}
+          onPress={handleCreateDeck}
+        >
+          <Text style={styles.modalButtonText}>Create Deck</Text>
+
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.modalButton}
+          onPress={toggleModalDeck}
+        >
+          <Text style={styles.modalButtonText}>Cancel</Text>
+        </TouchableOpacity>
+      </View>
     </View>
+  </Modal>      
+      </View>
+    
+      <Text style={styles.deckTitle}>{selectedDeck.name}</Text>
+      <Carousel
+        layout="default"
+        layoutCardOffset={9}
+        ref={isCarousel}
+        data={selectedDeck.flashcards}
+        renderItem={({ item }) => (
+          <Flashcard route={{ params: { frontContent: item.frontContent, backContent: item.backContent } }} />
+        )}
+        sliderWidth={SLIDER_WIDTH}
+        itemWidth={ITEM_WIDTH}
+        onScrollIndexChanged={(index) => setIndex(index)}
+        useScrollView={true}
+      />
+      <Pagination
+        dotsLength={selectedDeck.flashcards.length}
+        activeDotIndex={index}
+        carouselRef={isCarousel}
+        dotStyle={{
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          marginHorizontal: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.92)'
+        }}
+        inactiveDotOpacity={0.4}
+        inactiveDotScale={0.6}
+        tappableDots={true}
+      />
+
+      <TouchableOpacity style={styles.addButton} onPress={handleButtonPressFlashcard}>
+        <Text style={styles.addButtonText}>ADD CARD</Text>
+      </TouchableOpacity>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisibleFlashcard}
+        onRequestClose={() => {
+          toggleModalFlashcard();
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Flashcard</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Question"
+              value={question}
+              onChangeText={(text) => setQuestion(text)}
+            />
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Answer"
+              value={answer}
+              onChangeText={(text) => setAnswer(text)}
+            />
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={handleAddFlashcard}
+            >
+              <Text style={styles.modalButtonText}>Add Flashcard</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={toggleModalFlashcard}
+            >
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+    </ScrollView> 
   );
 }
 
+//prifle 
 function Profile() {
   return (
     <SafeAreaView style={styles.ProfileContainer}>
@@ -77,16 +272,12 @@ function Profile() {
   );
 }
 
+//mi-migrate dito yung sa home
 function Libraries(){
-  const Flashcard = () => {
-    return (
-      <View style={styles.flashcardContainer}>
-        <Flashcard frontContent="Alleniga2" backContent="Macaspac2" />
-      </View>
-    );
-  };
+  
 }
 
+//for tabs 
 function Tabs() {
   return (
     <Tab.Navigator
@@ -101,18 +292,14 @@ function Tabs() {
       }}
     >
 
-      <Tab.Screen
-        name="Home"
-        component={Flashcard}
-        initialParams={what}
-      />
+      <Tab.Screen name="Home" component={Homepage}/>
       <Tab.Screen name="Libraries" component={Libraries} />
       <Tab.Screen name="Profile" component={Profile} />
-      <Tab.Screen name="Carousel" component={CarouselCards} />
     </Tab.Navigator>
   );
 }
 
+//sign in 
 function SignIn1({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -166,6 +353,125 @@ function SignIn1({ navigation }) {
   );
 }
 
+function CarouselCards({navigation}){
+  const [index, setIndex] = React.useState(0)
+  const isCarousel = React.useRef(null)
+  const [isModalVisibleFlashcard, setIsModalVisibleFlashcard] = useState(false);
+
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+
+  const goBack=()=>{
+    navigation.replace('Tabs')
+  }
+  const toggleModalFlashcard = () => {
+    setIsModalVisibleFlashcard(!isModalVisibleFlashcard);
+  };
+  
+  const handleButtonPressFlashcard = () => {
+    toggleModalFlashcard();
+  };
+  const handleAddFlashcard = () => {
+    if (!question || !answer) {
+      alert('Please enter both question and answer');
+      return;
+    }
+
+    const newFlashcard = {
+      id: filter.flashcards.length + 1,
+      frontContent: question,
+      backContent: answer,
+    };
+
+    filter.flashcards.push(newFlashcard)
+    /*
+    setSelectedDeck((prevDeck) => ({
+      ...prevDeck,
+      flashcards: [...prevDeck.flashcards, newFlashcard],
+    }));
+    */
+    toggleModalFlashcard();
+  };
+
+  return (
+    <View>
+      <Carousel
+        layout="default"
+        layoutCardOffset={9}
+        ref={isCarousel}
+        data={filter.flashcards}
+        renderItem={({ item }) => (
+          <Flashcard route={{ params: { frontContent: item.frontContent, backContent: item.backContent } }} />
+        )}
+        sliderWidth={SLIDER_WIDTH}
+        itemWidth={ITEM_WIDTH}
+        onScrollIndexChanged={(index) => setIndex(index)}
+        useScrollView={true}
+      />
+      <Pagination
+        dotsLength={filter.flashcards.length}
+        activeDotIndex={index}
+        carouselRef={isCarousel}
+        dotStyle={{
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          marginHorizontal: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.92)'
+        }}
+        inactiveDotOpacity={0.4}
+        inactiveDotScale={0.6}
+        tappableDots={true}
+      />
+      <TouchableOpacity style={styles.addButton} onPress={goBack}>
+          <Text style={styles.addButtonText}>RETURN</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.addButton} onPress={handleButtonPressFlashcard}>
+        <Text style={styles.addButtonText}>ADD CARD</Text>
+      </TouchableOpacity>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisibleFlashcard}
+        onRequestClose={() => {
+          toggleModalFlashcard();
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Flashcard</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Question"
+              value={question}
+              onChangeText={(text) => setQuestion(text)}
+            />
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Answer"
+              value={answer}
+              onChangeText={(text) => setAnswer(text)}
+            />
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={handleAddFlashcard}
+            >
+              <Text style={styles.modalButtonText}>Add Flashcard</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={toggleModalFlashcard}
+            >
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  )
+}
+
 
 //NAVIGATIONZZZ
 const App=()=> {
@@ -173,15 +479,98 @@ const App=()=> {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="SignIn" component={SignIn1} />
-      <Stack.Screen name="Tabs" component={Tabs} />
+        <Stack.Screen name="Tabs" component={Tabs} />
+        <Stack.Screen name="CarouselCards" component={CarouselCards}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
-
 //stylesheet
 const styles = StyleSheet.create({
+  //modal container for deck and flashcard
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalInput: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingLeft: 10,
+  },
+  modalButton: {
+    backgroundColor: 'green',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  
+  // deck container made by chatgpt
+  deckContainer: {
+    marginHorizontal: 15,
+    marginVertical: 15,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 15,
+    backgroundColor: 'white',
+    elevation: 3, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+
+  deckTitle: {
+    marginVertical: 15,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+
+  addFlashcardContainer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingLeft: 10,
+  },
+  addButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "green",
+    borderRadius: "80%",
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 16
+  },
+
   flashcardContainer:{
     flex: 1,
     alignItems: 'center',

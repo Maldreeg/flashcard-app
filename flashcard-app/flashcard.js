@@ -24,7 +24,22 @@ const Flashcard = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+  
+  formContainer: {
+    marginTop: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+  },
+  formTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+
   flashcardContainer: {
+    marginVertical: 15,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',

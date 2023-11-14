@@ -1,20 +1,20 @@
-const details =[
+export var decks = [
     {
-        title:"Preview one",
-        author:"bile",
+      id: 1,
+      name: 'GYATT Flashcards',
+      flashcards: [
+        { id: 1, frontContent: 'Full name ni allen?', backContent: 'BOGART GYATT MACASPAC' },
+        { id: 2, frontContent: 'huh?', backContent: 'huhtdog kwento mo sa pagong' },
+        
+      ],
     },
     {
-        title:"Preview two",
-        author:"bile",
+      id: 2,
+      name: 'Facts',
+      flashcards: [
+        { id: 1, frontContent: 'shibal', backContent: 'uwu' },
+        { id: 2, frontContent: 'a', backContent: 'b' },
+       
+      ],
     },
-    {
-        title:"Preview three",
-        author:"bile",
-    },
-    {
-        title:"Preview four",
-        author:"bile",
-    },
-];
-
-export default details;
+  ]

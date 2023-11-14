@@ -1,28 +1,32 @@
 import React from 'react'
 import { View } from "react-native"
 import Carousel, { Pagination } from 'react-native-snap-carousel'
-import CarouselCardItem, { SLIDER_WIDTH, ITEM_WIDTH } from './carouselCardItem'
-import data from './data.js'
+import Flashcard from './flashcard.js'
 
-const CarouselCards = () => {
+const SLIDER_WIDTH = Dimensions.get('window').width + 80
+const ITEM_WIDTH = Math.round(SLIDER_WIDTH * 0.7)
+
+const CarouselCards = (vieweddecks) => {
   const [index, setIndex] = React.useState(0)
   const isCarousel = React.useRef(null)
 
   return (
     <View>
       <Carousel
-        layout="tinder"
+        layout="default"
         layoutCardOffset={9}
         ref={isCarousel}
-        data={data}
-        renderItem={CarouselCardItem}
+        data={vieweddecks}
+        renderItem={({ item }) => (
+          <Flashcard route={{ params: { frontContent: item.frontContent, backContent: item.backContent } }} />
+        )}
         sliderWidth={SLIDER_WIDTH}
         itemWidth={ITEM_WIDTH}
-        onSnapToItem={(index) => setIndex(index)}
+        onScrollIndexChanged={(index) => setIndex(index)}
         useScrollView={true}
       />
       <Pagination
-        dotsLength={data.length}
+        dotsLength={vieweddecks.flashcards.length}
         activeDotIndex={index}
         carouselRef={isCarousel}
         dotStyle={{
