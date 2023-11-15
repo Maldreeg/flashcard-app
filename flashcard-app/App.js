@@ -17,7 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { SLIDER_WIDTH, ITEM_WIDTH } from './carouselCardItem';
 import Flashcard from './flashcard';
-import { decks as decksData } from './data';
+import { decks as decksData , schools,courses,subjects } from './data';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -40,36 +40,34 @@ const SearchBar = () => {
 
 function Homepage({ navigation }) {
   const [isModalVisibleDeck, setIsModalVisibleDeck] = useState(false);
-  const [isModalVisibleFlashcard, setIsModalVisibleFlashcard] = useState(false);
-  const [newDeckName, setNewDeckName] = useState('');
   const [decks, setDecks] = useState(decksData); 
   const [selectedDeck, setSelectedDeck] = useState(decks[0]);
   const [index, setIndex] = React.useState(0);
   const isCarousel = React.useRef(null);
 
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
+  const [newDeckName, setNewDeckName] = useState('');
+  const [newCourse, setNewCourse] = useState('');
+  const [newSubject, setNewSubject] = useState('');
+  const [newUni, setNewUni] = useState('');
   
-
   const toggleModalDeck = () => {
     setIsModalVisibleDeck(!isModalVisibleDeck);
   };
-  const toggleModalFlashcard = () => {
-    setIsModalVisibleFlashcard(!isModalVisibleFlashcard);
-  };
+  
 
   const handleDeckPress = (deck) => {
     setSelectedDeck(deck);
-    filter=selectedDeck;
-    //navigation.replace('CarouselCards')
+    setFilter();
   };
+
+  const setFilter=()=>{
+    filter=selectedDeck;
+  }
 
   const handleButtonPressDeck = () => {
     toggleModalDeck();
   };
-  const handleButtonPressFlashcard = () => {
-    toggleModalFlashcard();
-  };
+  
   const handleCreateDeck = () => {
     if (!newDeckName) {
       alert('Please enter a valid deck name');
@@ -79,6 +77,9 @@ function Homepage({ navigation }) {
     const newDeck = {
       id: decks.length + 1,
       name: newDeckName,
+      subject: newSubject,
+      school: newUni,
+      course: newCourse,
       flashcards: [],
     };
 
@@ -86,28 +87,6 @@ function Homepage({ navigation }) {
     //setDecks([...decks, newDeck]);
     setNewDeckName('');
     toggleModalDeck();
-  };
-
-  const handleAddFlashcard = () => {
-    if (!question || !answer) {
-      alert('Please enter both question and answer');
-      return;
-    }
-
-    const newFlashcard = {
-      id: selectedDeck.flashcards.length + 1,
-      frontContent: question,
-      backContent: answer,
-    };
-
-    selectedDeck.flashcards.push(newFlashcard)
-    /*
-    setSelectedDeck((prevDeck) => ({
-      ...prevDeck,
-      flashcards: [...prevDeck.flashcards, newFlashcard],
-    }));
-    */
-    toggleModalFlashcard();
   };
 
   const moveToDeckScreen=()=>{
@@ -119,6 +98,7 @@ function Homepage({ navigation }) {
     <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}> 
     <View style={styles.HomePageUI}>
       <View>
+        <Text style={styles.deckTitle}>FEATURED DECKS</Text>
         <FlatList
           data={decks}
           horizontal
@@ -152,12 +132,30 @@ function Homepage({ navigation }) {
           value={newDeckName}
           onChangeText={(text) => setNewDeckName(text)}
         />
+        <TextInput
+          style={styles.modalInput}
+          placeholder="Course"
+          value={newCourse}
+          onChangeText={(text) => setNewCourse(text)}
+        />
+        <TextInput
+          style={styles.modalInput}
+          placeholder="Subject"
+          value={newSubject}
+          onChangeText={(text) => setNewSubject(text)}
+        />
+        <TextInput
+          style={styles.modalInput}
+          placeholder="University"
+          value={newUni}
+          onChangeText={(text) => setNewUni(text)}
+        />
+
         <TouchableOpacity
           style={styles.modalButton}
           onPress={handleCreateDeck}
         >
           <Text style={styles.modalButtonText}>Create Deck</Text>
-
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.modalButton}
@@ -199,48 +197,6 @@ function Homepage({ navigation }) {
         inactiveDotScale={0.6}
         tappableDots={true}
       />
-
-      <TouchableOpacity style={styles.addButton} onPress={handleButtonPressFlashcard}>
-        <Text style={styles.addButtonText}>ADD CARD</Text>
-      </TouchableOpacity>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={isModalVisibleFlashcard}
-        onRequestClose={() => {
-          toggleModalFlashcard();
-        }}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add Flashcard</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Question"
-              value={question}
-              onChangeText={(text) => setQuestion(text)}
-            />
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Answer"
-              value={answer}
-              onChangeText={(text) => setAnswer(text)}
-            />
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={handleAddFlashcard}
-            >
-              <Text style={styles.modalButtonText}>Add Flashcard</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={toggleModalFlashcard}
-            >
-              <Text style={styles.modalButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
     </ScrollView> 
   );
@@ -273,8 +229,118 @@ function Profile() {
 }
 
 //mi-migrate dito yung sa home
-function Libraries(){
+function Libraries({navigation}){
+  const [CourseDecks,setCourseDecks] = useState(decksData)
+  const [SubjectDecks,setSubjectDecks] = useState(decksData)
+  const [UniDecks,setUniDecks] = useState(decksData)
+  const Thumbnail = ({item}) => {
+    return (
+      <TouchableOpacity onPress={()=>goToCarousel(item)}>
+        <View style={styles.thumbnail}>
+          <Text>{item.name}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
   
+  const goToCarousel=(item)=>{
+    filter=item;
+    navigation.replace('CarouselCards');
+  }
+
+  const CoursePress=(item)=>{
+    let x = decksData.filter(coursedeck=>{
+      if (coursedeck.course === item) {
+        return true;
+      } else {
+        return false;
+      }
+    })
+    setCourseDecks(x)
+  }
+
+  const SubjectPress=(item)=>{
+    let x = decksData.filter(subjectdeck=>{
+      if (subjectdeck.subject === item) {
+        return true;
+      } else {
+        return false;
+      }
+    })
+    setSubjectDecks(x)
+  }
+
+  const UniPress=(item)=>{
+    let x = decksData.filter(unideck=>{
+      if (unideck.school === item) {
+        return true;
+      } else {
+        return false;
+      }
+    })
+    setUniDecks(x)
+  }
+
+  return(
+    <ScrollView>
+    <View>
+      <View>
+        <Text style={styles.deckTitle}>DECKS BY COURSE</Text>
+        <FlatList
+          data={courses}
+          horizontal
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => CoursePress(item)}style={styles.deckContainer}>
+              <Text style={styles.deckTitle}>{item}</Text>
+            </TouchableOpacity>
+          )}
+        />
+        <FlatList
+          data={CourseDecks}
+          horizontal
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={Thumbnail}
+        />
+      </View>
+      <View>
+        <Text style={styles.deckTitle}>DECKS BY SUBJECT</Text>
+        <FlatList
+          data={subjects}
+          horizontal
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => SubjectPress(item)}style={styles.deckContainer}>
+              <Text style={styles.deckTitle}>{item}</Text>
+            </TouchableOpacity>
+          )}
+        />
+        <FlatList
+          data={SubjectDecks}
+          horizontal
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={Thumbnail}
+        />
+      </View>
+      <View>
+        <Text style={styles.deckTitle}>DECKS BY UNIVERSITY</Text>
+        <FlatList
+          data={schools}
+          horizontal
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => UniPress(item)}style={styles.deckContainer}>
+              <Text style={styles.deckTitle}>{item}</Text>
+            </TouchableOpacity>
+          )}
+        />
+        <FlatList
+          data={UniDecks}
+          horizontal
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={Thumbnail}
+        />
+      </View>
+    </View>
+    </ScrollView>
+  )
 }
 
 //for tabs 
@@ -564,7 +630,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     backgroundColor: "green",
-    borderRadius: "80%",
+    borderRadius: "60%",
   },
   addButtonText: {
     color: 'white',
@@ -776,6 +842,14 @@ SignInUI: {
     lineHeight: "21px",
     fontFamily: "Inter, sans-serif",
     fontWeight: "400",
+  },
+  thumbnail: {
+    width: 300,
+    height: 200,
+    backgroundColor: 'lightblue',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })
 
