@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 10,
+    
   },
   formTitle: {
     fontSize: 18,
@@ -43,11 +44,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+
   },
   flashcard: {
     width: 300,
     height: 200,
-    backgroundColor: 'lightblue',
+    backgroundColor: '#A6CF98',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',

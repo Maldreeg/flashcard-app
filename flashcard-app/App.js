@@ -16,7 +16,11 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import { SLIDER_WIDTH, ITEM_WIDTH } from './carouselCardItem';
+
+//import of flashcards
 import Flashcard from './flashcard';
+
+//import of decks
 import { decks as decksData , schools,courses,subjects } from './data';
 
 const Tab = createBottomTabNavigator();
@@ -38,6 +42,7 @@ const SearchBar = () => {
   );
 };
 
+//home function
 function Homepage({ navigation }) {
   const [isModalVisibleDeck, setIsModalVisibleDeck] = useState(false);
   const [decks, setDecks] = useState(decksData); 
@@ -202,7 +207,7 @@ function Homepage({ navigation }) {
   );
 }
 
-//prifle 
+//profile
 function Profile() {
   return (
     <SafeAreaView style={styles.ProfileContainer}>
@@ -220,7 +225,7 @@ function Profile() {
         <View style={styles.profileInfo}>
           <Text style = {[styles.Username,{fontWeight:'200',fontSize:26}]}>Vhilly Manalansang</Text>
           <Text style = {[styles.Username,{color:'#AEB5BC',fontSize:12}]}>manalansang.vhilly@ue.edu.ph</Text>
-          <Text style = {[styles.Profileflashcard,{marginTop:32,fontSize:26,fontWeight:'bold'}]}>Flashcards</Text>
+          
         </View>
      
       </ScrollView>
@@ -228,7 +233,10 @@ function Profile() {
   );
 }
 
-//mi-migrate dito yung sa home
+//library ^0^
+
+// function for library
+
 function Libraries({navigation}){
   const [CourseDecks,setCourseDecks] = useState(decksData)
   const [SubjectDecks,setSubjectDecks] = useState(decksData)
@@ -627,10 +635,22 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   addButton: {
-    marginTop: 20,
-    padding: 10,
+    alignItems:"center",
+    marginVertical:20,
+    marginHorizontal:"35%",
+    borderRadius:"50%",
+    width: "25%",
+    alignItems: "center",
+    height: 45,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,1)",
+    boxSizing: "border-box",
     backgroundColor: "green",
-    borderRadius: "60%",
+    
   },
   addButtonText: {
     color: 'white',
@@ -844,9 +864,10 @@ SignInUI: {
     fontWeight: "400",
   },
   thumbnail: {
+    marginHorizontal:20,
     width: 300,
     height: 200,
-    backgroundColor: 'lightblue',
+    backgroundColor: '#A6CF98',
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
