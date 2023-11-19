@@ -1,0 +1,15 @@
+Comment mo lahat ng nasa App.js tas lagay moto:
+
+========================================================================
+import * as React from 'react';
+import MainContainer from './navigation/MainContainer';
+
+function App(){
+  return(
+    <MainContainer/>
+  );
+}
+
+export default App
+=========================================================================
+also missing function parin tho so heads up
